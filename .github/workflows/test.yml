@@ -14,7 +14,7 @@ jobs:
         with:
           image-name: test-app
           authors: 'Adrián Freisinger'
-          manteiners: 'Adrián Freisinger <afreisinger@gmail.com'
+          maintainers: 'Adrián Freisinger <afreisinger@gmail.com'
           vendor: 'Adrián Freisinger'
           tz: 'America/Argentina/Buenos_Aires'
           docker-username: ${{ secrets.DOCKER_USERNAME }}

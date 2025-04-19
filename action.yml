@@ -115,7 +115,7 @@ runs:
     - name: Get time
       id: time
       shell: bash
-      run: echo "current-time=$(date +'%Y-%m-%dT%H:%M:%S%Z')" >> $GITHUB_OUTPUT
+      run: echo "current-time=$(date +'%Y-%m-%dT%H:%M:%S %Z')" >> $GITHUB_OUTPUT
       env:
         TZ: ${{ inputs.tz || steps.dotenv.outputs.tz }}
 
