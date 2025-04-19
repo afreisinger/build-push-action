@@ -16,7 +16,6 @@ jobs:
           authors: 'Adrián Freisinger'
           maintainers: 'Adrián Freisinger <afreisinger@gmail.com'
           vendor: 'Adrián Freisinger'
-          tz: 'America/Argentina/Buenos_Aires'
           docker-username: ${{ secrets.DOCKER_USERNAME }}
           docker-pat: ${{ secrets.DOCKER_PAT }}
           github-token: ${{ secrets.GITHUB_TOKEN }}

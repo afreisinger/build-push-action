@@ -20,10 +20,6 @@ inputs:
     description: 'Log level for build'
     required: false
     default: 'debug'
-  tz:
-    description: 'Timezone for image metadata'
-    required: false
-    default: 'UTC'
   authors:
     description: 'Image authors'
     required: false
@@ -112,13 +108,6 @@ runs:
         username: ${{ github.actor }}
         password: ${{ inputs.github-token }}
 
-    - name: Get time
-      id: time
-      shell: bash
-      run: echo "local-time=$(date +'%Y-%m-%dT%H:%M:%S%z')" >> $GITHUB_OUTPUT
-      env:
-        TZ: ${{ inputs.tz || steps.dotenv.outputs.tz }}
-
     - name: Generate short sha
       id: sha
       shell: bash
@@ -163,7 +152,6 @@ runs:
           org.opencontainers.image.licenses=${{ inputs.licenses || steps.dotenv.outputs.licenses || 'MIT' }}
           org.opencontainers.image.vendor=${{ inputs.vendor || steps.dotenv.outputs.vendor }}
           org.opencontainers.image.maintainers=${{ inputs.maintainers || steps.dotenv.outputs.maintainers }}
-          org.opencontainers.image.created.local=${{ steps.time.outputs.local-time }}
           org.opencontainers.image.commit.short=${{ steps.sha.outputs.short-sha }}
           org.opencontainers.image.documentation=https://github.com/${{ github.repository }}/README.md
           org.opencontainers.image.ref.name=${{ github.ref_name }}

@@ -42,7 +42,6 @@ permissions:
 | `image-name`       | Name of the Docker image (e.g., `my-app`).                                  | Yes      | -                           |
 | `github-token`     | GitHub token for GHCR authentication.                                       | Yes      | `${{ github.token }}`       |
 | `log-level`        | Log level for build process (`debug`, `info`, `warn`, `error`).             | No       | `debug`                     |
-| `tz`               | Timezone for image metadata (e.g., `UTC`, `America/New_York`).              | No       | `UTC`                       |
 | `authors`          | Image authors (e.g., `John Doe <john@example.com>`).                        | No       | -                           |
 | `licenses`         | Image license (e.g., `MIT`, `Apache-2.0`).                                  | No       | `MIT`                       |
 | `vendor`           | Image vendor (e.g., `My Company`).                                          | No       | -                           |
