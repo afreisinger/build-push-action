@@ -12,8 +12,12 @@ jobs:
       
       - uses: afreisinger/build-push-action@v1.0.0
         with:
+          image-name: test-app
+          authors: 'Adrián Freisinger'
+          manteiners: 'Adrián Freisinger <afreisinger@gmail.com'
+          vendor: 'Adrián Freisinger'
+          tz: 'America/Argentina/Buenos_Aires'
           docker-username: ${{ secrets.DOCKER_USERNAME }}
           docker-pat: ${{ secrets.DOCKER_PAT }}
-          image-name: test-app
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          licenses: MIT
+          
