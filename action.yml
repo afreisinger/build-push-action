@@ -72,6 +72,7 @@ runs:
       with:
         path: ${{ inputs.env-file }}
         log-variables: false
+        ensure-exists: false
       continue-on-error: true  
 
     - name: Set up QEMU
