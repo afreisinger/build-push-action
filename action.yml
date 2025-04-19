@@ -1,0 +1,202 @@
+name: 'Docker Build and Push Multi-Platform and Registry'
+description: 'Builds and pushes a Docker image to Docker Hub and GitHub Container Registry'
+inputs:
+  docker-username:
+    description: 'Docker Hub username'
+    required: true
+  docker-pat:
+    description: 'Docker Hub personal access token'
+    required: true
+  image-name:
+    description: 'Docker image name'
+    required: true
+  github-token:
+    description: 'GitHub token for GHCR'
+    required: true
+    default: ${{ github.token }}
+  log-level:
+    description: 'Log level for build'
+    required: false
+    default: 'debug'
+  tz:
+    description: 'Timezone for image metadata'
+    required: false
+    default: 'UTC'
+  authors:
+    description: 'Image authors'
+    required: false
+  licenses:
+    description: 'Image licenses'
+    required: false
+  vendor:
+    description: 'Image vendor'
+    required: false
+  maintainers:
+    description: 'Image maintainers'
+    required: false
+  description:
+    description: 'Image description'
+    required: false
+  publish-dockerhub:
+    description: 'Whether to publish to Docker Hub'
+    required: false
+    default: 'true'
+  publish-ghcr:
+    description: 'Whether to publish to GitHub Container Registry'
+    required: false
+    default: 'false'
+  env-file:
+    description: 'Path to optional .env file'
+    required: false
+    default: '.env'
+
+
+outputs:
+  tags:
+    description: 'Docker image tags'
+    value: ${{ steps.meta.outputs.tags }}
+  labels:
+    description: 'Docker image labels'
+    value: ${{ steps.meta.outputs.labels }}
+runs:
+  using: 'composite'
+  steps:
+    - name: Check out the repository
+      uses: actions/checkout@v4
+
+    - name: Load environment variables from .env
+      id: dotenv
+      uses: falti/dotenv-action@v1.1.4
+      with:
+        path: ${{ inputs.env-file }}
+        log-variables: false
+      continue-on-error: true  
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Docker Hub
+      if: ${{ inputs.publish-dockerhub == 'true' }}
+      uses: docker/login-action@v2
+      with:
+        username: ${{ inputs.docker-username }}
+        password: ${{ inputs.docker-pat }}
+
+    - name: Check GitHub repository existence
+      id: check-repo
+      if: ${{ inputs.publish-ghcr == 'true' }}
+      shell: bash
+      run: |
+        response=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer ${{ inputs.github-token }}" \
+          "https://api.github.com/repos/${{ github.repository }}")
+        if [ "$response" = "200" ]; then
+          echo "repo-exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "repo-exists=false" >> $GITHUB_OUTPUT
+          echo "Repository ${{ github.repository }} does not exist or is inaccessible" >&2
+        fi
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+
+    - name: Log in to GitHub Container Registry
+      if: ${{ inputs.publish-ghcr == 'true' && steps.check-repo.outputs.repo-exists == 'true' }}
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ inputs.github-token }}
+
+    - name: Get time
+      id: time
+      shell: bash
+      run: echo "current-time=$(date +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
+      env:
+        TZ: ${{ inputs.tz || steps.dotenv.outputs.tz }}
+
+    - name: Generate short sha
+      id: sha
+      shell: bash
+      run: echo "short-sha=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+    - name: Sanitize description
+      id: description
+      shell: bash
+      run: echo "sanitized=$(echo '${{ inputs.description }}' | tr -d '\n\r' | sed 's/[^a-zA-Z0-9 .-]//g')" >> $GITHUB_OUTPUT
+
+    - name: Generate image URL
+      id: image-url
+      shell: bash
+      run: |
+        if [ "${{ inputs.publish-dockerhub }}" = "true" ] && [ "${{ inputs.publish-ghcr }}" = "true" ] && [ "${{ steps.check-repo.outputs.repo-exists }}" = "true" ]; then
+          echo "url=https://hub.docker.com/r/${{ inputs.docker-username }}/${{ inputs.image-name }}" >> $GITHUB_OUTPUT
+        elif [ "${{ inputs.publish-dockerhub }}" = "true" ]; then
+          echo "url=https://hub.docker.com/r/${{ inputs.docker-username }}/${{ inputs.image-name }}" >> $GITHUB_OUTPUT
+        elif [ "${{ inputs.publish-ghcr }}" = "true" ] && [ "${{ steps.check-repo.outputs.repo-exists }}" = "true" ]; then
+          echo "url=https://ghcr.io/${{ github.repository }}/${{ inputs.image-name }}" >> $GITHUB_OUTPUT
+        else
+          echo "url=" >> $GITHUB_OUTPUT
+        fi      
+    
+    - name: Extract metadata (tags, labels) for Docker
+      id: meta
+      uses: docker/metadata-action@v5.7.0
+      with:
+        images: |
+          ${{ inputs.publish-dockerhub == 'true' && format('docker.io/{0}/{1}', inputs.docker-username, inputs.image-name) || '' }}
+          ${{ inputs.publish-ghcr == 'true' && steps.check-repo.outputs.repo-exists == 'true' && format('ghcr.io/{0}', github.repository) || '' }}
+        tags: |
+          type=raw,value=latest
+          type=ref,event=branch
+          type=ref,event=pr
+          type=ref,event=tag
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=sha,format=short
+        labels: |
+          org.opencontainers.image.authors=${{ inputs.authors || steps.dotenv.outputs.authors }}
+          org.opencontainers.image.licenses=${{ inputs.licenses || steps.dotenv.outputs.licenses || 'MIT' }}
+          org.opencontainers.image.vendor=${{ inputs.vendor || steps.dotenv.outputs.vendor }}
+          org.opencontainers.image.maintainers=${{ inputs.maintainers || steps.dotenv.outputs.maintainers }}
+          org.opencontainers.image.created=${{ steps.time.outputs.current-time }}
+          org.opencontainers.image.commit.short=${{ steps.sha.outputs.short-sha }}
+          org.opencontainers.image.documentation=https://github.com/${{ github.repository }}/README.md
+          org.opencontainers.image.ref.name=${{ github.ref_name }}
+          org.opencontainers.image.url=${{ steps.image-url.outputs.url }}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v6.15.0
+      with:
+        context: .
+        file: ./Dockerfile
+        platforms: linux/amd64,linux/arm64
+        push: ${{ inputs.publish-dockerhub == 'true' || (inputs.publish-ghcr == 'true' && steps.check-repo.outputs.repo-exists == 'true') }}
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        annotations: ${{ steps.meta.outputs.annotations }}
+        outputs: |
+          type=image,name=target,annotation-index.org.opencontainers.image.description=${{ steps.description.outputs.sanitized }}
+        cache-from: |
+          ${{ inputs.publish-dockerhub == 'true' && format('type=registry,ref=docker.io/{0}/{1}:cache', inputs.docker-username, inputs.image-name) || '' }}
+          ${{ inputs.publish-ghcr == 'true' && format('type=registry,ref=ghcr.io/{0}:cache', github.repository) || '' }}
+        cache-to: |
+          ${{ inputs.publish-dockerhub == 'true' && format('type=registry,ref=docker.io/{0}/{1}:cache,mode=max', inputs.docker-username, inputs.image-name) || '' }}
+          ${{ inputs.publish-ghcr == 'true' && format('type=registry,ref=ghcr.io/{0}:cache,mode=max', github.repository) || '' }}
+        provenance: true
+        sbom: true
+        build-args: |
+          LOGLEVEL=${{ inputs.log-level }}
+          BUILD_TIMESTAMP=${{ steps.time.outputs.current-time }}
+           
+
+    - name: Update Docker Hub description
+      uses: peter-evans/dockerhub-description@v4
+      with:
+        username: ${{ inputs.docker-username }}
+        password: ${{ inputs.docker-pat }}
+        repository: ${{ inputs.docker-username }}/${{ inputs.image-name }}
+        readme-filepath: ./README.md
+        short-description: ${{ github.event.repository.description }}
+        enable-url-completion: true
