@@ -10,7 +10,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       
-      - uses: afreisinger/build-push-action@v1.0.0
+      - uses: afreisinger/build-push-action@v1.2.0
         with:
           image-name: test-app
           authors: 'Adrián Freisinger'
