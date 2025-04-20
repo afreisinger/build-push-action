@@ -119,7 +119,7 @@ runs:
     - name: Get repository description
       id: repo_description
       run: |
-        desc=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+        desc=$(curl -s -H "Authorization: Bearer ${{ inputs.github_token }}" \
           https://api.github.com/repos/${{ github.repository }} | jq -r .description)
         echo "repo.description=$desc" >> $GITHUB_OUTPUT
     
@@ -200,7 +200,7 @@ runs:
           BUILD_TIMESTAMP=${{ steps.time.outputs.current-time }}
            
     - name: Update Docker Hub description
-      uses: peter-evans/dockerhub-description@v4
+      uses: peter-evans/dockerhub-description@v4.0.2
       with:
         username: ${{ inputs.docker-username }}
         password: ${{ inputs.docker-pat }}
