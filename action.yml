@@ -116,10 +116,25 @@ runs:
       shell: bash
       run: echo "short-sha=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
 
+    - name: Get repository description
+      id: repo_description
+      run: |
+        desc=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          https://api.github.com/repos/${{ github.repository }} | jq -r .description)
+        echo "repo.description=$desc" >> $GITHUB_OUTPUT
+    
     - name: Sanitize description
       id: description
       shell: bash
-      run: echo "sanitized=$(echo '${{ inputs.description }}' | tr -d '\n\r' | sed 's/[^a-zA-Z0-9 .-]//g')" >> $GITHUB_OUTPUT
+      run: |
+        if [ -n "${{ inputs.description }}" ]; then
+          raw_description="${{ inputs.description }}"
+        else
+          raw_description=$(curl -s -H "Authorization: Bearer ${{ inputs.github_token }}" \
+          https://api.github.com/repos/${{ github.repository }} | jq -r .description)
+        fi
+        sanitized=$(echo "$raw_description" | tr -d '\n\r' | sed 's/[^a-zA-Z0-9 .-]//g')
+        echo "sanitized=$sanitized" >> "$GITHUB_OUTPUT"
 
     - name: Generate image URL
       id: image-url
