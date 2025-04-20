@@ -94,14 +94,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Build and Push Docker Image
-        uses: afreisinger/build-push-action@v1.1.0
+        uses: afreisinger/build-push-action@v1.3.0
         with:
+          image-name: my-app
           docker-username: ${{ secrets.DOCKER_USERNAME }}
           docker-pat: ${{ secrets.DOCKER_PAT }}
-          image-name: my-app
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          licenses: MIT
-          description: Lightweight environment for my app
           publish-dockerhub: true
           publish-ghcr: true
 ```
