@@ -1,0 +1,17 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/" # Donde están tus workflows (por defecto la raíz)
+    schedule:
+      interval: "weekly" # Podés poner: "daily", "weekly", "monthly"
+      day: "monday"
+      time: "10:00"
+    open-pull-requests-limit: 5
+    reviewers:
+      - afreisinger
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "⬆️ chore"
+      include: "scope"
