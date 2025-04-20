@@ -1,5 +1,9 @@
 # Build and Push Docker Image Action
 
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/afreisinger/build-push-action/test.yml?link=https%3A%2F%2Fgithub.com%2Fmarketplace%2Factions%2Fdocker-build-and-push-multi-platform-and-registry)
+
+![GitHub Release](https://img.shields.io/github/v/release/afreisinger/build-push-action?logo=github&logoColor=violet)
+
 This GitHub Action automates the process of building and pushing Docker images to Docker Hub and/or GitHub Container Registry (GHCR). It supports multi-platform builds, generates Open Containers Initiative (OCI) compliant metadata, and optimizes build performance with dynamic caching. Ideal for CI/CD pipelines requiring reliable Docker image publishing.
 
 ## Features
