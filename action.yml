@@ -51,7 +51,6 @@ inputs:
     required: false
     default: '.env'
 
-
 outputs:
   tags:
     description: 'Docker image tags'
@@ -59,6 +58,7 @@ outputs:
   labels:
     description: 'Docker image labels'
     value: ${{ steps.meta.outputs.labels }}
+
 runs:
   using: 'composite'
   steps:
@@ -184,7 +184,6 @@ runs:
           LOGLEVEL=${{ inputs.log-level }}
           BUILD_TIMESTAMP=${{ steps.time.outputs.current-time }}
            
-
     - name: Update Docker Hub description
       uses: peter-evans/dockerhub-description@v4
       with:
