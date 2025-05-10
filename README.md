@@ -94,7 +94,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Build and Push Docker Image
-        uses: afreisinger/build-push-action@v1.3.1
+        uses: afreisinger/build-push-action@v1.3.2
         with:
           image-name: my-app
           docker-username: ${{ secrets.DOCKER_USERNAME }}
