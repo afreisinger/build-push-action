@@ -201,6 +201,7 @@ runs:
           BUILD_TIMESTAMP=${{ steps.time.outputs.current-time }}
            
     - name: Update Docker Hub description
+      if: ${{ inputs.publish-dockerhub == 'true' }}
       uses: peter-evans/dockerhub-description@v4.0.2
       with:
         username: ${{ inputs.docker-username }}
