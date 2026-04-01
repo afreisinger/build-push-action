@@ -202,7 +202,7 @@ runs:
            
     - name: Update Docker Hub description
       if: ${{ inputs.publish-dockerhub == 'true' }}
-      uses: peter-evans/dockerhub-description@v4.0.2
+      uses: peter-evans/dockerhub-description@v5.0.0
       with:
         username: ${{ inputs.docker-username }}
         password: ${{ inputs.docker-pat }}
