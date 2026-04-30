@@ -160,12 +160,8 @@ runs:
           ${{ inputs.publish-ghcr == 'true' && steps.check-repo.outputs.repo-exists == 'true' && format('ghcr.io/{0}', github.repository) || '' }}
         tags: |
           type=raw,value=latest
-          type=ref,event=branch
-          type=ref,event=pr
           type=ref,event=tag
           type=semver,pattern={{version}}
-          type=semver,pattern={{major}}.{{minor}}
-          type=sha,format=short
         labels: |
           org.opencontainers.image.authors=${{ inputs.authors || steps.dotenv.outputs.authors }}
           org.opencontainers.image.licenses=${{ inputs.licenses || steps.dotenv.outputs.licenses || 'MIT' }}
