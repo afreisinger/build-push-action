@@ -173,7 +173,7 @@ runs:
           org.opencontainers.image.url=${{ steps.image-url.outputs.url }}
 
     - name: Build and push Docker image
-      uses: docker/build-push-action@v7.0.0
+      uses: docker/build-push-action@v7.2.0
       with:
         context: .
         file: ./Dockerfile
